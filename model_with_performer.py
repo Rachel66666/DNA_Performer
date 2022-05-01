@@ -14,20 +14,24 @@ from performer_pytorch.performer_enc_dec import PerformerEncDec
 
 class DNA_Performer_Config:
 
-    
-    embd_pdrop = 0.1
-    resid_pdrop = 0.1
-    attn_pdrop = 0.1
+    embd_pdrop = 0              # embedding dropout
+    ff_dropout = 0            # feedforward dropout
+    attn_dropout = 0
 
-    n_embd= 1024
+    n_embd= 1000
     block_size =100000
     n_head = 8
+    n_encod = 5
+    n_attention_layer= 6
     
     n_channel_cnn = 64
     n_intermediate = None
     max_short_seq_len=2000
     seq_len=100000
 
+    causal = False
+    feature_redraw_interval = 1000
+    nb_features = None
 
 
     def __init__(self, n_input_val, n_output, seq_len,**kwargs):
@@ -38,44 +42,31 @@ class DNA_Performer_Config:
         for k,v in kwargs.items():
             setattr(self, k ,v)
 
+
 class Conv_Embedding(nn.Module):
     def __init__(self, config):
         super().__init__()
-        n_channel_cnn = 64
         seq_len=config.seq_len
-        if seq_len<=1000:
-            kernel_size=3
-            stride=2
-        
-        else:
 
-            gap=seq_len/1000
-            stride= int(gap**(1/4))+1
-            #print("stride", stride)
-            kernel_size = stride+10+1
-            #print("kernel_size", kernel_size)
-
-        kernel_size = 10
-        stride = 5
-        self.cnn1 = nn.Conv1d(in_channels=config.n_input_val, out_channels=n_channel_cnn, kernel_size=8, stride=4, padding = 3)#int((kernel_size-1)/2))
-        self.cnn2 = nn.Conv1d(in_channels=n_channel_cnn, out_channels=256, kernel_size=kernel_size, stride=stride, padding = 4)#int((kernel_size-1)/2))  
-        self.cnn3 = nn.Conv1d(in_channels=256, out_channels=config.n_embd, kernel_size=kernel_size, stride=stride, padding = 4)#int((kernel_size-1)/2))
+        self.encod = nn.Embedding(config.n_encod,config.n_encod)
+        # config.n_encod is 5
+        # config.n_embd is 1000
+        self.cnn1 = nn.Conv1d(in_channels=config.n_encod, out_channels=64, kernel_size=8, stride=4, padding = 3)
+        self.cnn2 = nn.Conv1d(in_channels=64, out_channels=256, kernel_size=10, stride=5, padding = 4)
+        self.cnn3 = nn.Conv1d(in_channels=256, out_channels=config.n_embd, kernel_size=10, stride=5, padding = 4)
         
+
     def forward(self, x):
         
-        ##print("before cnn1", x.size())
-        x = self.cnn1(x)
-        ##print("cnn1", x.size())
+        x = self.encod(x)#.view(b,small_seq_len,w)
+        b, _, small_seq_len, w = x.size()
+        x = self.cnn1(x.view(b,small_seq_len,w).transpose(1, 2))
         x = F.relu(x)
         x = self.cnn2(x)
-        ##print("cnn2", x.size())
         x = F.relu(x)
         x = self.cnn3(x)
-        ##print("cnn3", x.size())
         x = F.relu(x)
-        
         x = x.transpose(1, 2)
-        #print("transpose", x.size())
         return x 
 
 
@@ -99,21 +90,42 @@ class Performer_block(nn.Module):
         super().__init__()
         self.performer_layers = Performer(
             dim = config.n_embd, 
-            depth = 7,
-            heads = 8,
-            causal = True,
-            dim_head = 7)
+            depth = config.n_attention_layer,
+            heads = config.n_head,
+            causal = config.causal,
+            feature_redraw_interval = config.feature_redraw_interval,
+            dim_head = config.n_embd//config.n_head,
+            nb_features = config.nb_features,    
+            attn_dropout = 0,
+            ff_mult = 1
+            )
     def forward(self, tensor):
         tensor = self.performer_layers(tensor)
         return tensor
 
 
 
+# class PerformerLM_block(nn.Module):
+#     def __init__(self, config):
+#         super().__init__()
+#         self.performer_layers = PerformerLM(
+#             dim = config.n_embd, 
+#             depth = config.n_attention_layer,
+#             heads = config.n_head,
+#             causal = False,
+#             num_tokens = 5,
+#             max_seq_len = 100000
+#             )
+#     def forward(self, tensor):
+#         tensor = self.performer_layers(tensor)
+#         return tensor
+
 
 class DNA_Performer(nn.Module):
 
     def __init__(self, config):
         super().__init__()
+        self.encod = nn.Embedding(config.n_encod,config.n_encod)
         self.acnn = Conv_Embedding(config)
         self.aembd = Postion_Embeddings(config)
         self.norm = nn.LayerNorm(config.n_embd)
@@ -125,7 +137,11 @@ class DNA_Performer(nn.Module):
         
     def get_features(self, idx):
         
+        
         #print("####before everything",idx.size())
+        x = self.encod(idx)#.view(b,small_seq_len,w)
+        #b, _, small_seq_len, w = x.size()
+        #print("####after encod",x.size())
         x = self.acnn(idx)
         #print("####after cnn",x.size())
         x = self.aembd(x)
