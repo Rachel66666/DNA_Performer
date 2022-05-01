@@ -6,6 +6,7 @@ import sys
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
+from model.helpers import cparam
 
 
 # What is this?
@@ -143,7 +144,7 @@ class Block(nn.Module):
 
         n_intermediate = config.n_intermediate
         if n_intermediate is None:
-            n_intermediate = config.n_embd#4 *config.n_embd 
+            n_intermediate = 4 * config.n_embd
 
         self.mlp = nn.Sequential(
             nn.Linear(config.n_embd, n_intermediate),
@@ -168,7 +169,6 @@ class BERT(nn.Module):
         super().__init__()
         self.acnn = Conv_Embedding(config)
         self.aembd = Postion_Embeddings(config)
-        
         self.blocks = nn.Sequential(*[Block(config)
                       for _ in range(config.n_attention_layer)])
         self.norm = nn.LayerNorm(config.n_embd)
@@ -176,6 +176,16 @@ class BERT(nn.Module):
         self.seq_len=config.seq_len
 
         self.expand_layer = nn.Linear(config.n_embd, 4*100, bias=True)
+
+        conv_params = cparam(self.acnn)
+        posemb_params = cparam(self.aembd)
+        tran_param = cparam(self.blocks)
+
+        print("Conv params:", conv_params)
+        print("Encode params:", posemb_params)
+        print("Transformer Params:", tran_param)
+
+
         
     def get_features(self, idx):
         
