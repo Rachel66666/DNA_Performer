@@ -1,6 +1,9 @@
 import torch
 
 def cparam(model):
+    """
+    Count the number of parameters in a model
+    """
     t_params = 0
     params = list(model.parameters())
     for i in range(len(params)):
@@ -9,6 +12,9 @@ def cparam(model):
 
 
 def model_summary(model):
+    """
+    Summary of a model in terms of layers
+    """
     print()
     print("Layer_name"+"\t"*7+"Number of Parameters")
     print("="*100)
@@ -16,7 +22,6 @@ def model_summary(model):
     layer_name = [child for child in model.children()]
     j = 0
     total_params = 0
-
     for i in layer_name:
         param = 0
         try:
@@ -36,6 +41,9 @@ def model_summary(model):
     print(f"Total Params:{total_params}")   
 
 def model_summary2(model):
+    """
+    Alternative version of model summary function
+    """
     print()
     print("Layer_name"+"\t"*7+"Number of Parameters")
     print("="*100)
@@ -47,6 +55,5 @@ def model_summary2(model):
         param = torch.numel(model_parameters[i])
         print(str(layer_name[i])+"\t"*3+str(param))
         total_params+=param
-
     print("="*100)
     print(f"Total Params:{total_params}")   

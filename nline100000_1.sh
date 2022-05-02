@@ -66,5 +66,3 @@ python submit_training.py \
 --emb_dropout $emb_dropout \
 --ff_dropout $ff_dropout \
 --attn_dropout $attn_dropout \
-
-

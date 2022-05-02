@@ -1,30 +1,24 @@
 import math
 import logging
 import sys
-#sys.path.append('path_to_venv/lib/python3.8/site-packages')
 
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
-from model.helpers import cparam
 
 
-# What is this?
 logger = logging.getLogger(__name__)
-
-# What is this?
 STATE_DICT_KEY_DEFAULT="state_dict"
 CONFIG_KEY_DEFAULT="config"
 
 
-# First we define a configuration class.
 class BERTConfig:
-
-    """Consider what variables to be added with value and what other to be chose by user"""
+    """
+    Configuration class for traditional transformer model
+    """
     embd_pdrop = 0
     resid_pdrop = 0
     attn_pdrop = 0
-
     n_embd= 1024 #512#256#128#64 #768
     block_size =100000
     n_head = 8
@@ -34,8 +28,7 @@ class BERTConfig:
     max_short_seq_len=2000
     seq_len=100000
     n_encod = 5
-
-
+    
     def __init__(self, n_input_val, n_output, seq_len,**kwargs):
 
         self.n_input_val = n_input_val
@@ -47,31 +40,19 @@ class BERTConfig:
 class Conv_Embedding(nn.Module):
     def __init__(self, config):
         super().__init__()
-
         self.encod = nn.Embedding(config.n_encod,config.n_encod)
-        # The first parameter is num_embeddings (int) – size of the dictionary of embeddings
-        # The second parameter is embedding_dim (int) – the size of each embedding vector
-        # The n_encod is 5. 
-        # Our volcab size is 5(4+1). So the first dimension is 5 = n_encod. 
-        # For each number, we want a (5,1) vector to represent it. So the second dimension is n_encod. 
-        
         self.cnn1 = nn.Conv1d(in_channels=config.n_encod, out_channels=64, kernel_size=8, stride=4, padding = 3)
         self.cnn2 = nn.Conv1d(in_channels=64, out_channels=256, kernel_size=10, stride=5, padding = 4)
         self.cnn3 = nn.Conv1d(in_channels=256, out_channels=config.n_embd, kernel_size=10, stride=5, padding = 4)
         
     def forward(self, x):
-        
-        x = self.encod(x)#.view(b,small_seq_len,w)
-        #print("after encod", x.size())
+        x = self.encod(x)
         b, _, small_seq_len, w = x.size()
         x = self.cnn1(x.view(b,small_seq_len,w).transpose(1, 2))
-        #print("after conv1", x.size())
         x = F.relu(x)
         x = self.cnn2(x)
-        #print("after conv2", x.size())
         x = F.relu(x)
         x = self.cnn3(x)
-        #print("after conv3", x.size())
         x = F.relu(x)
         x = x.transpose(1, 2)
         return x 
@@ -81,16 +62,12 @@ class Postion_Embeddings(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.pos_emb= nn.Parameter(torch.zeros(1, config.max_short_seq_len, config.n_embd))
-        #self.tok_emb= nn.Linear(config.n_input_val, config.n_embd)
         self.drop = nn.Dropout(config.embd_pdrop)
 
     def forward(self, tensor):
         b, seq_len,n_input_val = tensor.size() # t must be sequence length  # I doubt b is the bs
-        
         position_embeddings = self.pos_emb[:,:seq_len,:]
-        #tensor= self.tok_emb(tensor)
         tensor = self.drop(tensor + position_embeddings)
-        
         return tensor
 
 class SelfAttention(nn.Module):
@@ -110,14 +87,12 @@ class SelfAttention(nn.Module):
 
     def forward(self, x,):
         B, T, C = x.size()
-        #print("B,T,C", B, T, C)
         # calculate query, key, values for all heads in batch and move head forward to be the batch dim
         k = self.key(x).view(B, T, self.n_head, C //
                              self.n_head).transpose(1, 2)  # (B, nh, T, hs)
         q = self.query(x).view(B, T, self.n_head, C //
                                self.n_head).transpose(1, 2)  # (B, nh, T, hs)
         v = self.value(x).view(B, T, self.n_head, C // self.n_head).transpose(1, 2)  # (B, nh, T, hs)
-        #v = x.view(B, T, self.n_head, C // self.n_head).transpose(1, 2)  # (B, nh, T, hs)
 
         # bi-directional self-attention; Self-attend: (B, nh, T, hs) x (B, nh, hs, T) -> (B, nh, T, T)
         att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
@@ -125,10 +100,7 @@ class SelfAttention(nn.Module):
         att = self.attn_drop(att)
         y = att @ v  # (B, nh, T, T) x (B, nh, T, hs) -> (B, nh, T, hs)
         # re-assemble all head outputs side by side
-        #y = att
-
         y = y.transpose(1, 2).contiguous().view(B, T, C)
-
         # output projection
         y = self.resid_drop(self.proj(y))
 
@@ -144,7 +116,7 @@ class Block(nn.Module):
 
         n_intermediate = config.n_intermediate
         if n_intermediate is None:
-            n_intermediate = 4 * config.n_embd
+            n_intermediate = config.n_embd#4 *config.n_embd 
 
         self.mlp = nn.Sequential(
             nn.Linear(config.n_embd, n_intermediate),
@@ -164,7 +136,9 @@ class Block(nn.Module):
 
 
 class BERT(nn.Module):
-
+    """
+    Traditional transformer model
+    """
     def __init__(self, config):
         super().__init__()
         self.acnn = Conv_Embedding(config)
@@ -172,40 +146,21 @@ class BERT(nn.Module):
         self.blocks = nn.Sequential(*[Block(config)
                       for _ in range(config.n_attention_layer)])
         self.norm = nn.LayerNorm(config.n_embd)
-
         self.seq_len=config.seq_len
-
         self.expand_layer = nn.Linear(config.n_embd, 4*100, bias=True)
-
-        conv_params = cparam(self.acnn)
-        posemb_params = cparam(self.aembd)
-        tran_param = cparam(self.blocks)
-
-        print("Conv params:", conv_params)
-        print("Encode params:", posemb_params)
-        print("Transformer Params:", tran_param)
-
-
         
     def get_features(self, idx):
-        
         x = self.acnn(idx)
         x = self.aembd(x) # This is the position embeding layer
         x = self.blocks(x)
         x = self.norm(x)
-
         return x
+
     def forward(self, idx):
         features = self.get_features(idx)
-        #print("####features shape", features.size())
-        
         x = self.expand_layer(features)
-        #print("####after expand", expand.size())
         b, small_seq_len, w = x.size()
-        #unroll = x.view(b,100000,4)
-        #print("####output", unroll.size())
-        
-        return x.view(b,100000,4)#unroll#.transpose(1, 2)
+        return x.view(b,100000,4)
 
 
     def get_save_dict(self, config_key=CONFIG_KEY_DEFAULT, state_dict_key=STATE_DICT_KEY_DEFAULT):

@@ -1,24 +1,19 @@
 import torch
-import tensorflow 
-from tqdm import tqdm
 from torch.utils.data.dataloader import DataLoader
-from torch.utils.tensorboard import SummaryWriter
 import dataset.pickledataset as dataset
-from torch.nn import functional as F
-import math
 
 
 class Tester:
+    """
+    Testing class
+    """
     def __init__(self, PATH, test_dataset):
         self.model = torch.load(PATH, map_location=torch.device('cpu'))
         self.test_loader = DataLoader(test_dataset, batch_size=8, num_workers=0)
-        self.device = 'cpu'# if no GPU then it is cpu 
-
-
+        self.device = 'cpu'
         # print("Model's state_dict:")
         # for param_tensor in self.model.state_dict():
         #     print(param_tensor, "\t", self.model.state_dict()[param_tensor].size())
-
 
         # if torch.cuda.is_available():
         #     print("Let's use", torch.cuda.device_count(), "GPUs!")
@@ -26,6 +21,9 @@ class Tester:
         #     self.model = torch.nn.DataParallel(self.model).to(self.device) 
 
     def test_run(self):
+        """
+        The actual run for testing
+        """
         test_accuracy = 0.0
         total = 0
         correct = 0
@@ -42,7 +40,7 @@ class Tester:
             output = self.model(x)
 
             # calculate accuracy
-            _, predictions = torch.max(logits.view(-1, logits.size(-1)), 1)
+            _, predictions = torch.max(output.view(-1, output.size(-1)), 1)
             total += torch.sum(targets.view(-1) != -100)
             correct += (predictions == targets.view(-1)).sum()
             test_accuracy = correct/(total+0.0000001)
@@ -56,10 +54,7 @@ print("Loading model...")
 PATH = "./runs_performer/performer_lr3e-4/lrdecay1/bs8/n_att_layer3/head2/n_embd2000/seq_len100000/em_dr0/ff_dr0/att_dr0/epoch20/nlines100000/04-16-2022_23-12-53/model"
 
 # GPU setting: Define the device
-device = 'cpu'# if no GPU then it is cpu 
-# if torch.cuda.is_available():
-#     print("Let's use", torch.cuda.device_count(), "GPUs!")
-#     device = torch.cuda.current_device() # if there is GPU then use GPU 
+device = 'cpu'
 
 # load testing dataset
 print("Loading DataSet...")

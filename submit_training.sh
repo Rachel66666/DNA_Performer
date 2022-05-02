@@ -24,7 +24,6 @@
 # Set maximum time to 20 days
 #$ -l h_rt=600:00:00
 
-
 module load python3/3.7.9
 module load tensorflow/2.3.1
 module load pytorch/1.7.0
@@ -51,7 +50,6 @@ logging_path="${logging_path_root}"
 mkdir -p $logging_path
 
 
-
 python submit_training.py \
 --logdir $logging_path \
 --learning_rate $lr \
@@ -66,4 +64,3 @@ python submit_training.py \
 --emb_dropout $emb_dropout \
 --ff_dropout $ff_dropout \
 --attn_dropout $attn_dropout \
-

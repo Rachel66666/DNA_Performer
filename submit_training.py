@@ -3,12 +3,10 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 
-import sys
-
 
 import model.model_with_performer as model
 import model.model_with_transformer as Tmodel
-# import model.model_with_conv as Cmodel
+import model.model_with_conv as Cmodel
 import model.training_loop as trainer
 import dataset.pickledataset as dataset
 
@@ -77,7 +75,6 @@ train_dataset = dataset.SeqDataset(pickle_path,numlines=numlines)
 
 
 # Model part
-# Extract class
 
 # Performer
 BERT = model.DNA_Performer
@@ -100,7 +97,6 @@ model = BERT(mconf)
 
 
 # Trainer part
-# Extract class
 Trainer = trainer.Trainer
 TrainerConfig = trainer.TrainerConfig
 
