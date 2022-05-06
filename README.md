@@ -11,7 +11,7 @@ Our DNA performer project aim to build a time efficient transformer model for DN
 - Training and Testing for MLM and Downstream are in home directory
 
 
-\
+
 ### Task
 
 We are focusing on using state-of-the-art time efficient transformer models to do the long-sequence DNA masked language modeling task - training a model to predict a random sample of input tokens that have been replaced by a masked placeholder in a DNA sequence.
@@ -21,7 +21,7 @@ The downstream task we plan on is the identification of gene promoters in DNA se
 Our overall goal is to implement the DNA-performer model and to compare the performance of the architecture.
 
 
-\
+
 ### Approach
 We use the implementation of <a href="https://github.com/lucidrains/performer-pytorch">Performer architecture</a> developed by Lucidrains and his colleague[2]. For the fully connected output layers, we use linear layers from Pytorch.
 
@@ -31,7 +31,8 @@ We propose 2 sets of comparison for our model. For the first set, we compare the
 
 <img src="./comparison.png" width="500px"></img>
 
-\
+
+
 ### Results
 
 - #### DNA MLM
@@ -54,13 +55,13 @@ We also fine tuned our three models on the promoter region prediction downstream
 | Iteration / second | 0.525 | 0.350(Different GPU due to GPU availability) | 0.563 |
 
 
-\
+
 ### Conclusion
 
 The performer architecture we adapted improves training speed while still preserving the accuracy to be similar and even better than the traditional Transformer.
 
 
-\
+
 ### References
 
 - Yanrong Ji, Zhihan Zhou, Han Liu, Ramana V Davuluri, DNABERT: pre-trained Bidirectional Encoder Representations from Transformers model for DNA-language in genome, Bioinformatics, Volume 37, Issue 15, 1 August 2021, Pages 2112–2120.
