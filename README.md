@@ -1,5 +1,3 @@
-<img src="./model.png" width="500px"></img>
-
 ## DNA_Performer
 
 Our DNA performer project aim to build a time efficient transformer model for DNA seqeunces. We uses Performer architecture which reduces training time from quadratic time to linear time.
@@ -7,10 +5,12 @@ Our DNA performer project aim to build a time efficient transformer model for DN
 
 ### Code
 
-- .model: DNA_Performer, DNA_Transformer, DNA_CNN models we implemented
-- .autoencoder: Autoencoder
-- .performer_pytorch: Performer embedding layers developed by Lucidrains and his colleague
+- `.model`: DNA_Performer, DNA_Transformer, DNA_CNN models we implemented
+- `.autoencoder`: Autoencoder
+- `.performer_pytorch`: Performer embedding layers developed by Lucidrains and his colleague
 - Training and Testing for MLM and Downstream are in home directory
+
+
 
 ### Task
 
@@ -20,16 +20,22 @@ The downstream task we plan on is the identification of gene promoters in DNA se
 
 Our overall goal is to implement the DNA-performer model and to compare the performance of the architecture.
 
+
+
 ### Approach
 We use the implementation of Performer embedding layers developed by Lucidrains and his colleague[2]. For the fully connected output layers, we use linear layers from Pytorch.
+
+<img src="./model.png" width="500px"></img>
 
 We propose 2 sets of comparison for our model. For the first set, we compare the effect of the performer architecture with 2 alternative models. In the first alternative model we implement a transformer in place of the performer while keeping the convolution and linear layers intact. In the second, we replace the performer with a block of convolutional layers.
 
 <img src="./comparison.png" width="500px"></img>
 
+
+
 ### Results
 
-#### DNA MLM
+- #### DNA MLM
 We trained our DNA-Performer, DNA-Transformer, and DNA-CNN model on the same 100k lines of masked language modeling dataset and tested the three models on a 2000 lines dataset. The result is as follows. 
 
 |           | DNA-Performer | DNA-Transformer | DNA-CNN |
@@ -39,7 +45,7 @@ We trained our DNA-Performer, DNA-Transformer, and DNA-CNN model on the same 100
 | Iteration / second | 0.604 | 0.570 | 0.603 |
 
 
-#### Downstream Promoter
+- #### Downstream Promoter
 We also fine tuned our three models on the promoter region prediction downstream task.
 
 |           | TATA-Performer | TATA-Transformer | TATA-CNN |
@@ -48,9 +54,12 @@ We also fine tuned our three models on the promoter region prediction downstream
 | Test accuracy   | 0.9621       | 0.459      |   0.9566  |
 | Iteration / second | 0.525 | 0.350(Different GPU due to GPU availability) | 0.563 |
 
+
+
 ### Conclusion
 
 The performer architecture we adapted improves training speed while still preserving the accuracy to be similar and even better than the traditional Transformer.
+
 
 
 ### References
