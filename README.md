@@ -36,23 +36,23 @@ We propose 2 sets of comparison for our model. For the first set, we compare the
 ### Results
 
 - #### DNA MLM
-We trained our DNA-Performer, DNA-Transformer, and DNA-CNN model on the same 100k lines of masked language modeling dataset and tested the three models on a 2000 lines dataset. The result is as follows. 
+We trained our DNA-Performer, DNA-Transformer, and DNA-CNN model on the same 100k lines of masked language modeling dataset and tested the three models on a 2000 lines dataset.
 
 |           | DNA-Performer | DNA-Transformer | DNA-CNN |
-| :---:  | :---:   |     :---:      | :---: |
-| Training accuracy   | 0.505     | 0.504    |   0.550  |
-| Test accuracy   | 0.460       | 0.459      |   0.401  |
-| Iteration / second | 0.604 | 0.570 | 0.603 |
+| :---: | :---: | :---: | :---: |
+| Training accuracy   | 0.505     | 0.504    |   <strong>0.550</strong>  |
+| Test accuracy   | <strong>0.460</strong>       | 0.459      |   0.401  |
+| Iteration / second | <strong>0.604</strong> | 0.570 | 0.603 |
 
 
 - #### Downstream Promoter
 We also fine tuned our three models on the promoter region prediction downstream task.
 
 |           | TATA-Performer | TATA-Transformer | TATA-CNN |
-| :---:  | :---:   |     :---:      | :---: |
-| Training accuracy   |  0.99(smoothed)    | 0.99(smoothed)    |   0.99(smoothed)  |
-| Test accuracy   | 0.9621       | 0.459      |   0.9566  |
-| Iteration / second | 0.525 | 0.350(Different GPU due to GPU availability) | 0.563 |
+| :---: | :---: | :---: | :---: |
+| Training accuracy |  0.99(smoothed) | 0.99(smoothed) | 0.99(smoothed) |
+| Test accuracy   | <strong>0.9621</strong>  | 0.9587 |   0.9566  |
+| Iteration / second | 0.525 | 0.350(Different GPU due to GPU availability) | <strong>0.563</strong> |
 
 
 
