@@ -7,7 +7,6 @@ import loader.pickledataset as dataset
 class Tester:
     def __init__(self, PATH, test_dataset):
         self.model = torch.load(PATH, map_location=torch.device('cpu'))#.state
-
         self.test_loader = DataLoader(test_dataset, batch_size=2, num_workers=0)
         self.device = 'cpu'# if no GPU then it is cpu 
 
@@ -54,7 +53,7 @@ device = 'cpu'# if no GPU then it is cpu
 
 # load testing dataset
 print("Loading DataSet...")
-pickle_path = '2000_line_100k_len_April_3.pickle'
+pickle_path = 'Downstream_Data.pkl'
 test_dataset = dataset.SeqDataset(pickle_path,numlines=1000)
 
 print("Start Testing...")
