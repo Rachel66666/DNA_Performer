@@ -58,7 +58,7 @@ We also fine tuned our three models on the promoter region prediction downstream
 
 ### Conclusion
 
-The performer architecture we adapted improves training speed while still preserving the accuracy to be similar and even better than the traditional Transformer.
+The performer architecture we adapted improves training speed while still preserving the accuracy to be similar and even better than the traditional Transformer. For the downstream task, we achieve higher testing accuracy than two other models with CNN and Transformer and competitive results compare to DNABERT.
 
 
 
